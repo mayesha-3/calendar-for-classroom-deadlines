@@ -29,6 +29,7 @@ app.use(
         connectSrc: [
           "'self'",
           "https://*.vercel.app",
+          "https://*.onrender.com",
           "https://kanbankc-oday.onrender.com",
           "https://apis.google.com",
           "https://*.google.com",
