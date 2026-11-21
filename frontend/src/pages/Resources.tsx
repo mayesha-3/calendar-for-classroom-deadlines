@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { apiFetch } from '../api'
 import { BACKEND_URL } from '../config'
 import { Download, FileText, Folder, FolderPlus, LoaderCircle, Trash2, Upload, X } from 'lucide-react'
-import { auth } from '../firebase'
 import type { FormEvent } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog'
 

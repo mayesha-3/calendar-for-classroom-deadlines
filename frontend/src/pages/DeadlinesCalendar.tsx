@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { auth } from '../firebase'
 import { Send, ChevronLeft, ChevronRight, Plus, X, Trash2 } from 'lucide-react'
 import { BACKEND_URL } from '../config'
 import { apiFetch } from '../api'
