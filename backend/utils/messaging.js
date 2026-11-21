@@ -10,7 +10,7 @@ import User from '../models/User.js';
  */
 export const sendNotificationToUsers = async (userIds, title, body, data = {}) => {
   try {
-    if (!userIds || userIds.length === 0) return;
+    if (!Array.isArray(userIds) || userIds.length === 0) return { successCount: 0, failureCount: 0 };
 
     // Fetch the users to get their FCM tokens
     const users = await User.find({ _id: { $in: userIds } }).lean();
@@ -36,12 +36,13 @@ export const sendNotificationToUsers = async (userIds, title, body, data = {}) =
         title,
         body,
       },
-      data,
+      data: Object.fromEntries(Object.entries(data).map(([key, value]) => [key, String(value ?? '')])),
       tokens,
     };
 
     const response = await getMessaging().sendEachForMulticast(message);
     console.log(`FCM Multicast sent: ${response.successCount} successes, ${response.failureCount} failures`);
+    return { successCount: response.successCount, failureCount: response.failureCount };
   } catch (err) {
     console.error('Error sending FCM notification:', err);
   }

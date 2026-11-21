@@ -17,6 +17,19 @@ export const collectUserTokens = (users = []) => {
   return [...seen]
 }
 
+export const getChangedAssigneeIds = (previousIds = [], nextIds = []) => {
+  const previous = new Set(previousIds.map(String))
+  return [...new Set(nextIds.map(String))].filter(id => !previous.has(id))
+}
+
+export const getDueSoonTaskIds = (tasks = [], now = new Date()) => {
+  const start = now.getTime()
+  const end = start + 24 * 60 * 60 * 1000
+  return tasks
+    .filter(task => task?.dueDate && new Date(task.dueDate).getTime() >= start && new Date(task.dueDate).getTime() <= end)
+    .map(task => String(task._id))
+}
+
 export const sendMulticastNotification = async ({ userIds = [], title, body, data = {} }) => {
   if (!title || !body) {
     throw new Error('Notification title and body are required')

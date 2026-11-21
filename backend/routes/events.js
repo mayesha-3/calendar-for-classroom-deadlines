@@ -39,7 +39,7 @@ router.post('/', requireUser, async (req, res) => {
     })
 
     if (status === 'published') {
-      const allUsers = await User.find({ _id: { $ne: user._id } }).select('_id').lean()
+      const allUsers = await User.find().select('_id').lean()
       const recipientIds = allUsers.map(u => u._id)
       sendNotificationToUsers(
         recipientIds,

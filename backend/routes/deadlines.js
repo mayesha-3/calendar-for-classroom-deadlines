@@ -3,6 +3,7 @@ import Deadline from '../models/Deadline.js'
 import User from '../models/User.js'
 import ActivityLog from '../models/ActivityLog.js'
 import { requireUser } from '../middleware/rbac.js'
+import { sendNotificationToUsers } from '../utils/messaging.js'
 
 const router = express.Router()
 
@@ -35,6 +36,14 @@ router.post('/', requireUser, async (req, res) => {
       deadline: new Date(deadline),
       createdBy: user._id,
     })
+
+    const allUsers = await User.find().select('_id').lean()
+    void sendNotificationToUsers(
+      allUsers.map(u => u._id),
+      'New Deadline Added',
+      `"${title}" was added`,
+      { type: 'deadline', itemId: dl._id.toString(), url: '/calendar' }
+    )
 
     res.status(201).json(dl)
   } catch (error) {
@@ -114,6 +123,13 @@ router.post('/:id/comments', requireUser, async (req, res) => {
     })
 
     const populated = await ActivityLog.findById(comment._id).populate('author', 'name email username').lean()
+    const allUsers = await User.find().select('_id').lean()
+    void sendNotificationToUsers(
+      allUsers.map(u => u._id),
+      'New Deadline Comment',
+      `${populated.author?.name || 'Someone'} commented on "${dl.title}"`,
+      { type: 'deadline-comment', itemId: dl._id.toString(), url: '/calendar' }
+    )
     res.status(201).json(populated)
   } catch (error) {
     res.status(500).json({ error: 'Unable to add comment' })

@@ -11,6 +11,7 @@ import AdminSecurity from './pages/AdminSecurity'
 import Resources from './pages/Resources'
 import InstallPWA from './components/InstallPWA'
 import SecurityGate from './components/SecurityGate'
+import { useFCM } from './hooks/useFCM'
 import { apiFetch } from './api'
 import { BACKEND_URL, isFirebaseConfigured } from './config'
 import { auth, googleProvider } from './firebase'
@@ -76,6 +77,7 @@ function App() {
   const [profile, setProfile] = useState<any>(null)
   const [profileError, setProfileError] = useState('')
   const location = useLocation()
+  useFCM()
 
   useEffect(() => {
     if (!auth) { setAuthReady(true); return }

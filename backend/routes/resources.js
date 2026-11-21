@@ -4,6 +4,7 @@ import { Readable } from 'node:stream'
 import Resource from '../models/Resource.js'
 import User from '../models/User.js'
 import { requireUser } from '../middleware/rbac.js'
+import { sendNotificationToUsers } from '../utils/messaging.js'
 
 const router = express.Router()
 const MAX_PDF_BYTES = 25 * 1024 * 1024
@@ -38,6 +39,13 @@ router.post('/folders', requireUser, async (req, res) => {
     if (!owner) return res.status(404).json({ error: 'User profile not found.' })
     if (parentId && !(await Resource.exists({ _id: parentId, kind: 'folder' }))) return res.status(404).json({ error: 'Parent folder not found.' })
     const folder = await Resource.create({ name, kind: 'folder', parentId, ownerId: owner._id })
+    const allUsers = await User.find().select('_id').lean()
+    void sendNotificationToUsers(
+      allUsers.map(u => u._id),
+      'New Resource Folder Added',
+      `Folder "${name}" was added`,
+      { type: 'resource', itemId: folder._id.toString(), url: '/resources' }
+    )
     res.status(201).json(folder)
   } catch (error) {
     if (error?.code === 11000) return res.status(409).json({ error: 'A folder with that name already exists here.' })
@@ -71,6 +79,13 @@ router.post('/upload', requireUser, express.raw({ type: 'application/pdf', limit
       Readable.from([req.body]).pipe(upload)
     })
     const resource = await Resource.create({ name, kind: 'pdf', parentId, ownerId: owner._id, size: req.body.length, fileId: upload.id })
+    const allUsers = await User.find().select('_id').lean()
+    void sendNotificationToUsers(
+      allUsers.map(u => u._id),
+      'New PDF Added',
+      `"${name}" was uploaded`,
+      { type: 'resource', itemId: resource._id.toString(), url: '/resources' }
+    )
     res.status(201).json(resource)
   } catch (error) {
     if (upload?.id) bucket().delete(upload.id).catch(() => {})

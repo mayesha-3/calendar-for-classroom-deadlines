@@ -11,6 +11,8 @@ export const useFCM = (onWarning?: () => void) => {
   const registered = useRef(false);
 
   useEffect(() => {
+    if (!messaging) return;
+
     const requestPermissionAndRegister = async () => {
       if (registered.current) return;
       
