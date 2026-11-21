@@ -1,14 +1,17 @@
 export const roles = {
   ADMIN: 'admin',
-  Leader: 'Leader',
-  EMPLOYEE: 'employee',
+  USER: 'user',
 }
 
-export const PERMANENT_ADMIN_EMAIL = 'coo.kishorcoder@gmail.com'
+export const PERMANENT_ADMIN_EMAILS = [
+  'mayeshaafrooz@gmail.com',
+  'c241488@ugrad.iiuc.ac.bd',
+]
 
 export const isPermanentAdmin = (email) => {
   if (!email || typeof email !== 'string') return false
-  return email.trim().toLowerCase() === PERMANENT_ADMIN_EMAIL.toLowerCase()
+  const clean = email.trim().toLowerCase()
+  return PERMANENT_ADMIN_EMAILS.some(e => e.toLowerCase() === clean)
 }
 
 export const ensureRole = (...allowedRoles) => (req, res, next) => {
@@ -25,5 +28,4 @@ export const ensureRole = (...allowedRoles) => (req, res, next) => {
 }
 
 export const requireAdmin = ensureRole(roles.ADMIN)
-export const requireLeader = ensureRole(roles.ADMIN, roles.Leader)
-export const requireEmployee = ensureRole(roles.ADMIN, roles.Leader, roles.EMPLOYEE)
+export const requireUser = ensureRole(roles.ADMIN, roles.USER)

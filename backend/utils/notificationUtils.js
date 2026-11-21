@@ -17,26 +17,6 @@ export const collectUserTokens = (users = []) => {
   return [...seen]
 }
 
-export const getChangedAssigneeIds = (previousIds = [], nextIds = []) => {
-  const previousSet = new Set(previousIds.map((id) => String(id)))
-  const nextSet = new Set(nextIds.map((id) => String(id)))
-  return [...nextSet].filter((id) => !previousSet.has(id))
-}
-
-export const getDueSoonTaskIds = (tasks = [], now = new Date()) => {
-  const next24Hours = 24 * 60 * 60 * 1000
-
-  return tasks
-    .filter((task) => task?.dueDate)
-    .filter((task) => {
-      const dueDate = new Date(task.dueDate)
-      if (Number.isNaN(dueDate.getTime())) return false
-      const diff = dueDate.getTime() - now.getTime()
-      return diff > 0 && diff <= next24Hours
-    })
-    .map((task) => String(task._id))
-}
-
 export const sendMulticastNotification = async ({ userIds = [], title, body, data = {} }) => {
   if (!title || !body) {
     throw new Error('Notification title and body are required')
@@ -63,32 +43,4 @@ export const sendMulticastNotification = async ({ userIds = [], title, body, dat
     failureCount: response.failureCount,
     tokens,
   }
-}
-
-export const sendAssignmentNotification = async (task, assigneeIds = []) => {
-  if (!task || !Array.isArray(assigneeIds) || !assigneeIds.length) return null
-
-  return sendMulticastNotification({
-    userIds: assigneeIds,
-    title: 'New task assigned',
-    body: `You were assigned: ${task.title}`,
-    data: {
-      taskId: String(task._id),
-      type: 'task_assigned',
-    },
-  })
-}
-
-export const sendDeadlineReminderNotification = async (task, assigneeIds = []) => {
-  if (!task || !Array.isArray(assigneeIds) || !assigneeIds.length) return null
-
-  return sendMulticastNotification({
-    userIds: assigneeIds,
-    title: 'Deadline alert',
-    body: `${task.title} is due soon. Please review it before the deadline.`,
-    data: {
-      taskId: String(task._id),
-      type: 'deadline_reminder',
-    },
-  })
 }

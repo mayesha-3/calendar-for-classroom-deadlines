@@ -20,11 +20,8 @@ router.get('/', async (req, res) => {
       contactEmail: user.contactEmail || '',
       name: user.name,
       role: user.role,
-      department: user.department || '',
       username: user.username || '',
-      superior: user.superior || null,
       isWarned: !!user.isWarned,
-      position: user.position || '',
     })
   } catch (error) {
     console.error('Profile route error:', error)
@@ -63,7 +60,7 @@ router.patch('/', async (req, res) => {
   const firebaseUser = req.user
   if (!firebaseUser) return res.status(401).json({ error: 'Unauthorized' })
 
-  const { name, username, superior, contactEmail } = req.body
+  const { name, username, contactEmail } = req.body
 
   try {
     const user = await User.findOne({ uid: firebaseUser.uid })
@@ -92,17 +89,6 @@ router.patch('/', async (req, res) => {
       }
     }
 
-    if (superior !== undefined) {
-      if (superior === '') {
-        user.superior = null
-      } else {
-        if (superior === user._id.toString()) {
-          return res.status(400).json({ error: 'Cannot be your own superior' })
-        }
-        user.superior = superior
-      }
-    }
-
     await user.save()
 
     res.json({
@@ -111,11 +97,8 @@ router.patch('/', async (req, res) => {
       contactEmail: user.contactEmail || '',
       name: user.name,
       role: user.role,
-      department: user.department || '',
       username: user.username || '',
-      superior: user.superior || null,
       isWarned: !!user.isWarned,
-      position: user.position || '',
     })
   } catch (error) {
     console.error('Profile update error:', error)

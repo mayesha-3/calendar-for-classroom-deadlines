@@ -207,22 +207,22 @@ function AdminSecurity() {
             <Shield className="text-[var(--accent)]" size={26} /> Security Administration
           </h1>
           <p className="text-sm text-[var(--text2)] mt-1">
-            Explore sample abuse reports and IP ban controls in the local demo workspace.
+            Review security reports and manage IP blocks for the live service.
           </p>
         </div>
         <button
           type="button"
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate('/settings')}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text1)] font-semibold hover:bg-[var(--border)]/50 transition-all"
         >
-          <ArrowLeft size={16} /> Back to Admin
+          <ArrowLeft size={16} /> Back to Settings
         </button>
       </div>
 
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-6 shadow-sm">
         <h2 className="text-lg font-bold text-[var(--text1)] mb-1">Demo Challenge Settings</h2>
         <p className="text-sm text-[var(--text2)] mb-5">
-          These controls only change sample data in this browser. The public demo has no login gate and does not verify or store real credentials.
+          Update the public security challenge and review reports recorded by the live service.
         </p>
 
         <form onSubmit={handleSave} className="flex flex-col gap-4">
@@ -233,7 +233,7 @@ function AdminSecurity() {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               className="w-full border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--text1)] px-4 py-3"
-              placeholder="e.g. What software platform does KanbaKan belong to?"
+              placeholder="e.g. What is this platform called?"
               required
             />
           </label>

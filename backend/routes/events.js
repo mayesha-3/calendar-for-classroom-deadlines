@@ -1,13 +1,12 @@
 import express from 'express'
 import Event from '../models/Event.js'
 import User from '../models/User.js'
-import { requireAdmin, requireLeader, requireEmployee } from '../middleware/rbac.js'
+import { requireAdmin, requireUser } from '../middleware/rbac.js'
 import { sendNotificationToUsers } from '../utils/messaging.js'
 
 const router = express.Router()
 
-// GET /api/events -> any authenticated (requireEmployee covers all roles)
-router.get('/', requireEmployee, async (req, res) => {
+router.get('/', requireUser, async (req, res) => {
   try {
     const events = await Event.find().sort({ date: 1 }).populate('createdBy', 'name email').lean()
     res.json(events)
@@ -17,8 +16,7 @@ router.get('/', requireEmployee, async (req, res) => {
   }
 })
 
-// POST /api/events -> any authenticated
-router.post('/', requireEmployee, async (req, res) => {
+router.post('/', requireUser, async (req, res) => {
   const { title, description, eventType, date, deadline } = req.body
   const role = req.user.role
   const user = await User.findOne({ uid: req.user.uid })
@@ -84,8 +82,8 @@ router.patch('/:id/approve', requireAdmin, async (req, res) => {
   }
 })
 
-// DELETE /api/events/:id -> admin only
-router.delete('/:id', requireAdmin, async (req, res) => {
+// DELETE /api/events/:id -> any authenticated user can delete
+router.delete('/:id', requireUser, async (req, res) => {
   try {
     const event = await Event.findByIdAndDelete(req.params.id)
     if (!event) return res.status(404).json({ error: 'Event not found' })

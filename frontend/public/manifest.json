@@ -1,14 +1,14 @@
 {
-  "name": "KanbaKan — Interactive Demo",
-  "short_name": "KanbaKan",
-  "description": "Explore KanbaKan with fictional sample data in an interactive demo workspace.",
+  "name": "Confused CSE 6CF",
+  "short_name": "CSE 6CF",
+  "description": "University deadlines, events, and resource hub for CSE students.",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#0f172a",
-  "theme_color": "#4f46e5",
-  "categories": ["productivity", "business", "utilities"],
+  "background_color": "#0E0810",
+  "theme_color": "#DB2777",
+  "categories": ["education", "productivity", "utilities"],
   "icons": [
     {
       "src": "/icon-192.png",

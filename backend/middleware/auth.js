@@ -39,15 +39,15 @@ export const verifyFirebaseToken = async (req, res, next) => {
     } else {
       dbUser = await User.findOne({ uid }).select("role _id email").lean();
       if (dbUser) {
-        req.user.role = dbUser.role;
+        req.user.role = dbUser.role === "admin" ? "admin" : "user";
         req.user.dbId = dbUser._id;
         userCache.set(uid, {
-          role: dbUser.role,
+          role: req.user.role,
           dbId: dbUser._id,
           expiresAt: Date.now() + USER_CACHE_TTL,
         });
       } else {
-        req.user.role = decodedToken.role || "employee";
+        req.user.role = decodedToken.role === "admin" ? "admin" : "user";
       }
     }
 

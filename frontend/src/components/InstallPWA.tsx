@@ -64,7 +64,7 @@ export default function InstallPWA() {
           <Smartphone size={15} className="text-white" />
         </div>
         <div className="truncate">
-          <span className="font-semibold">Install KanbaKan:</span>{" "}
+          <span className="font-semibold">Install Confused CSE 6CF:</span>{" "}
           <span className="hidden sm:inline text-indigo-100">
             Keep it on your home screen for instant access!
           </span>

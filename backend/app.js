@@ -5,11 +5,10 @@ import rateLimit from "express-rate-limit";
 import profileRouter from "./routes/profile.js";
 import authRouter from "./routes/auth.js";
 import usersRouter from "./routes/users.js";
-import tasksRouter from "./routes/tasks.js";
+import deadlinesRouter from "./routes/deadlines.js";
 import eventsRouter from "./routes/events.js";
-import sprintsRouter from "./routes/sprints.js";
-import reportsRouter from "./routes/reports.js";
 import securityGateRouter from "./routes/securityGate.js";
+import resourcesRouter from "./routes/resources.js";
 import { verifyFirebaseToken } from "./middleware/auth.js";
 import { verifyGateTokenHeader } from "./middleware/gateAuth.js";
 
@@ -74,7 +73,7 @@ app.use(
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-gate-token"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-gate-token", "x-file-name"],
     optionsSuccessStatus: 200,
     preflightContinue: false,
     maxAge: 86400,
@@ -87,7 +86,7 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-gate-token");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-gate-token, x-file-name");
     res.header("Access-Control-Max-Age", "86400");
     return res.sendStatus(200);
   }
@@ -109,16 +108,16 @@ const errorHandler = (err, req, res, next) => {
 };
 app.use(errorHandler);
 
-// Public / Health Routes (must remain outside the global API limiter)
+// Public / Health Routes
 app.get("/", (req, res) => {
-  res.status(200).json({ status: "ok", name: "KanbanKC API", version: "1.0.0" });
+  res.status(200).json({ status: "ok", name: "Confused CSE 6CF API", version: "2.0.0" });
 });
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", uptime: process.uptime ? process.uptime() : 0 });
 });
 
-// Rate limiters for API endpoints. Keep /health exempt so Render cron jobs do not hit 429s.
+// Rate limiters
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -129,7 +128,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Keep the challenge endpoints public; require a passed gate for application APIs.
+// Security gate
 app.use("/api", (req, res, next) => {
   if (
     req.path === "/security-gate/question" ||
@@ -140,19 +139,13 @@ app.use("/api", (req, res, next) => {
   return verifyGateTokenHeader(req, res, next);
 });
 
-const reportLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-});
-
 // API Routes
 app.use("/api/auth", verifyFirebaseToken, authRouter);
 app.use("/api/users", verifyFirebaseToken, usersRouter);
-app.use("/api/tasks", verifyFirebaseToken, tasksRouter);
+app.use("/api/deadlines", verifyFirebaseToken, deadlinesRouter);
 app.use("/api/profile", verifyFirebaseToken, profileRouter);
 app.use("/api/events", verifyFirebaseToken, eventsRouter);
-app.use("/api/sprints", verifyFirebaseToken, sprintsRouter);
-app.use("/api/reports", verifyFirebaseToken, reportLimiter, reportsRouter);
+app.use("/api/resources", verifyFirebaseToken, resourcesRouter);
 app.use("/api/security-gate", securityGateRouter);
 
 export default app;

@@ -13,31 +13,27 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ]
 
+const EVENT_TYPE_OPTIONS = [
+  { value: 'webinar', label: 'Webinar' },
+  { value: 'seminar', label: 'Seminar' },
+  { value: 'competition', label: 'Competition' },
+  { value: 'hackathon', label: 'Hackathon' },
+  { value: 'other', label: 'Other' },
+]
+
 const MAX_CHIPS = 3
 
 const fetchEvents = async () => {
-  const token = await auth.currentUser?.getIdToken()
-  const res = await apiFetch(`${BACKEND_URL}/api/events`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    credentials: 'include'
-  })
+  const res = await apiFetch(`${BACKEND_URL}/api/events`)
   if (!res.ok) throw new Error('Failed to fetch events')
   return res.json()
 }
 
 const createEvent = async (data: { title: string; description: string; eventType: string; date: string; deadline?: string }) => {
-  const token = await auth.currentUser?.getIdToken()
   const res = await apiFetch(`${BACKEND_URL}/api/events`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
-    credentials: 'include'
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -57,7 +53,7 @@ export default function PlanningHub() {
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: fetchEvents
+    queryFn: fetchEvents,
   })
 
   const createMutation = useMutation({
@@ -66,10 +62,10 @@ export default function PlanningHub() {
       queryClient.invalidateQueries({ queryKey: ['events'] })
       setShowCreateModal(false)
     },
-    onError: (err: any) => alert(err.message)
+    onError: (err: any) => alert(err.message),
   })
 
-  // ── Build date → events lookup ──
+  // Build date -> events lookup
   const eventsByDate = useMemo(() => {
     const map = new Map<string, any[]>()
     events.forEach((ev: any) => {
@@ -81,15 +77,13 @@ export default function PlanningHub() {
     return map
   }, [events])
 
-  // ── Calendar grid ──
+  // Calendar grid
   const calendarCells = useMemo(() => {
     const firstDay = new Date(viewYear, viewMonth, 1)
     const startDow = firstDay.getDay()
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate()
     const prevDays = new Date(viewYear, viewMonth, 0).getDate()
-
     const cells: { day: number; month: number; year: number; outside: boolean }[] = []
-
     for (let i = startDow - 1; i >= 0; i--) {
       const d = prevDays - i
       const m = viewMonth === 0 ? 11 : viewMonth - 1
@@ -108,7 +102,7 @@ export default function PlanningHub() {
     return cells
   }, [viewYear, viewMonth])
 
-  // ── Upcoming events (next 30 days) ──
+  // Upcoming events (next 30 days)
   const upcomingEvents = useMemo(() => {
     const now = new Date(); now.setHours(0, 0, 0, 0)
     const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() + 30)
@@ -122,7 +116,6 @@ export default function PlanningHub() {
       .slice(0, 10)
   }, [events])
 
-  // ── Navigation ──
   const goToPrev = () => {
     if (viewMonth === 0) { setViewMonth(11); setViewYear(viewYear - 1) }
     else setViewMonth(viewMonth - 1)
@@ -161,7 +154,7 @@ export default function PlanningHub() {
       description: fd.get('description') as string,
       eventType: fd.get('eventType') as string,
       date: fd.get('date') as string,
-      deadline: (fd.get('deadline') as string) || undefined
+      deadline: (fd.get('deadline') as string) || undefined,
     })
   }
 
@@ -169,14 +162,11 @@ export default function PlanningHub() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:justify-between sm:items-center">
         <h2 className="text-2xl font-bold text-[var(--text1)]">Events Hub</h2>
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            to="/calendar"
-            className="flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          >
+          <Link to="/calendar" className="flex items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90">
             <CalendarDays size={16} /> Deadlines Calendar
           </Link>
           <div className="flex items-center gap-3">
@@ -189,16 +179,13 @@ export default function PlanningHub() {
             </button>
             <button className="px-4 py-2 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30 text-sm font-semibold hover:bg-[var(--accent)]/20 transition-all duration-200 cursor-pointer" onClick={goToToday}>Today</button>
           </div>
-          <button
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-white font-semibold hover:opacity-90 transition-all duration-200 cursor-pointer"
-            onClick={() => setShowCreateModal(true)}
-          >
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent)] text-white font-semibold hover:opacity-90 transition-all duration-200 cursor-pointer" onClick={() => setShowCreateModal(true)}>
             <Plus size={16} /> New Event
           </button>
         </div>
       </div>
 
-      {/* ── Calendar Grid ── */}
+      {/* Calendar Grid */}
       <div className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded-2xl overflow-hidden flex flex-col">
         <div className="grid grid-cols-7 border-b border-[var(--border)]">
           {DAYS_OF_WEEK.map(d => (
@@ -211,33 +198,21 @@ export default function PlanningHub() {
             const dayEvents = eventsByDate.get(key) || []
             const visible = dayEvents.slice(0, MAX_CHIPS)
             const overflow = dayEvents.length - MAX_CHIPS
-
             return (
-              <div
-                key={idx}
-                className={`relative border-r border-b border-[var(--border)]/30 p-2 min-h-[100px] flex flex-col transition-colors duration-150
-                  ${cell.outside ? 'opacity-30 pointer-events-none' : ''}
-                  ${isToday(cell) ? 'bg-[var(--accent)]/5 ring-1 ring-inset ring-[var(--accent)]/20' : 'hover:bg-[var(--border)]/20'}`}
-              >
+              <div key={idx} className={`relative border-r border-b border-[var(--border)]/30 p-2 min-h-[100px] flex flex-col transition-colors duration-150
+                ${cell.outside ? 'opacity-30 pointer-events-none' : ''}
+                ${isToday(cell) ? 'bg-[var(--accent)]/5 ring-1 ring-inset ring-[var(--accent)]/20' : 'hover:bg-[var(--border)]/20'}`}>
                 <span className={`text-sm font-semibold mb-1.5 select-none ${isToday(cell) ? 'text-[var(--accent)] font-bold' : 'text-[var(--text2)]'}`}>
                   {cell.day}
                 </span>
                 <div className="flex flex-col gap-1 overflow-y-auto flex-1">
                   {visible.map((ev: any) => (
-                    <div
-                      key={ev._id}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium cursor-pointer transition-all duration-150 hover:translate-x-0.5
-                        bg-[var(--accent2)]/15 text-[var(--accent2)] border-l-2 border-l-[var(--accent2)]"
-                      onClick={() => setSelectedEvent(ev)}
-                      title={ev.title}
-                    >
+                    <div key={ev._id} className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium cursor-pointer transition-all duration-150 hover:translate-x-0.5 bg-[var(--accent2)]/15 text-[var(--accent2)] border-l-2 border-l-[var(--accent2)]" onClick={() => setSelectedEvent(ev)} title={ev.title}>
                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent2)] flex-shrink-0" />
                       <span className="truncate">{ev.title}</span>
                     </div>
                   ))}
-                  {overflow > 0 && (
-                    <div className="text-[10px] text-[var(--text2)] text-center">+{overflow} more</div>
-                  )}
+                  {overflow > 0 && <div className="text-[10px] text-[var(--text2)] text-center">+{overflow} more</div>}
                 </div>
               </div>
             )
@@ -245,17 +220,13 @@ export default function PlanningHub() {
         </div>
       </div>
 
-      {/* ── Upcoming Events Strip ── */}
+      {/* Upcoming Events Strip */}
       {upcomingEvents.length > 0 && (
         <div className="flex gap-3 overflow-x-auto mt-5 pb-2">
           {upcomingEvents.map((ev: any) => {
             const dl = getDaysUntil(ev.date)
             return (
-              <div
-                key={ev._id}
-                className="flex-none w-[220px] p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl cursor-pointer hover:-translate-y-0.5 hover:border-[var(--accent)] transition-all duration-200"
-                onClick={() => setSelectedEvent(ev)}
-              >
+              <div key={ev._id} className="flex-none w-[220px] p-4 bg-[var(--surface)] border border-[var(--border)] rounded-xl cursor-pointer hover:-translate-y-0.5 hover:border-[var(--accent)] transition-all duration-200" onClick={() => setSelectedEvent(ev)}>
                 <h4 className="font-semibold text-sm text-[var(--text1)] truncate mb-1.5">{ev.title}</h4>
                 <div className="flex justify-between text-[11px]">
                   <span className="text-[var(--text2)] capitalize">{ev.eventType || 'Event'}</span>
@@ -267,7 +238,7 @@ export default function PlanningHub() {
         </div>
       )}
 
-      {/* ── Create Event Modal ── */}
+      {/* Delete Confirmation */}
       <ConfirmDialog
         open={!!deleteEvent}
         title="Delete event?"
@@ -277,12 +248,7 @@ export default function PlanningHub() {
         onConfirm={async () => {
           if (!deleteEvent) return
           try {
-            const token = await auth.currentUser?.getIdToken()
-            const res = await apiFetch(`${BACKEND_URL}/api/events/${deleteEvent._id}`, {
-              method: 'DELETE',
-              headers: { Authorization: `Bearer ${token}` },
-              credentials: 'include'
-            })
+            const res = await apiFetch(`${BACKEND_URL}/api/events/${deleteEvent._id}`, { method: 'DELETE' })
             if (res.ok) {
               queryClient.invalidateQueries({ queryKey: ['events'] })
               setSelectedEvent(null)
@@ -297,6 +263,7 @@ export default function PlanningHub() {
         }}
       />
 
+      {/* Create Event Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowCreateModal(false)}>
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-7 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -318,15 +285,9 @@ export default function PlanningHub() {
               <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--text1)]">
                 Event Type
                 <select name="eventType" className="w-full border border-[var(--border)] rounded-xl bg-[var(--bg)] text-[var(--text1)] px-4 py-3 focus:outline-none focus:border-[var(--accent)] transition-colors cursor-pointer">
-                  <option value="meeting">Meeting</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="celebration">Celebration</option>
-                  <option value="deadline">Deadline</option>
-                  <option value="sprint_review">Sprint Review</option>
-                  <option value="webinar">Webinar</option>
-                  <option value="all_hands">All Hands</option>
-                  <option value="roadmap">Roadmap</option>
-                  <option value="other">Other</option>
+                  {EVENT_TYPE_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
                 </select>
               </label>
               <label className="flex flex-col gap-2 text-sm font-semibold text-[var(--text1)]">
@@ -350,21 +311,14 @@ export default function PlanningHub() {
         </div>
       )}
 
-      {/* ── Event Details Modal ── */}
+      {/* Event Details Modal */}
       {selectedEvent && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setSelectedEvent(null)}>
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-7 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold text-[var(--text1)]">Event Details</h3>
               <div className="flex items-center gap-2">
-                <button
-                  className="p-2 text-[var(--text2)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all cursor-pointer"
-                  title="Delete event"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setDeleteEvent(selectedEvent)
-                  }}
-                >
+                <button className="p-2 text-[var(--text2)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all cursor-pointer" title="Delete event" onClick={(e) => { e.stopPropagation(); setDeleteEvent(selectedEvent) }}>
                   <Trash2 size={16} />
                 </button>
                 <button className="text-[var(--text2)] hover:text-[var(--text1)] transition-colors cursor-pointer" onClick={() => setSelectedEvent(null)}>
@@ -425,7 +379,7 @@ export default function PlanningHub() {
                 {selectedEvent.createdBy && (
                   <div>
                     <p className="text-xs text-[var(--text2)] uppercase tracking-wider font-semibold mb-1">Created By</p>
-                    <p className="text-sm">{selectedEvent.createdBy.name || selectedEvent.createdBy.email}{selectedEvent.createdBy.position ? ` [${selectedEvent.createdBy.position}]` : ''}</p>
+                    <p className="text-sm">{selectedEvent.createdBy.name || selectedEvent.createdBy.email}</p>
                   </div>
                 )}
               </div>

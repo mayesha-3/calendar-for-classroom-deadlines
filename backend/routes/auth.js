@@ -22,9 +22,7 @@ router.post('/session', async (req, res) => {
       email: user.email,
       name: user.name,
       role: user.role,
-      department: user.department || '',
       isWarned: !!user.isWarned,
-      position: user.position || '',
     })
   } catch (error) {
     console.error('Session creation failed:', error?.stack || error)
@@ -46,9 +44,7 @@ router.get('/me', async (req, res) => {
       email: user.email,
       name: user.name,
       role: user.role,
-      department: user.department || '',
       isWarned: !!user.isWarned,
-      position: user.position || '',
     })
   } catch (error) {
     console.error('Failed to fetch /auth/me:', error)

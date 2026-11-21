@@ -1,23 +1,14 @@
-import type { Auth, User, GoogleAuthProvider } from 'firebase/auth'
-import type { Messaging } from 'firebase/messaging'
+import { getApp, getApps, initializeApp } from 'firebase/app'
+import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth'
+import { getMessaging, type Messaging } from 'firebase/messaging'
+import { FIREBASE_CONFIG, isFirebaseConfigured } from './config'
 
-// Lightweight identity used by existing screens to populate the demo API.
-// No Firebase app is initialized and no credentials or account services load.
-const demoUser = {
-  uid: 'demo-admin-uid',
-  email: 'avery.stone@example.com',
-  displayName: 'Avery Stone',
-  getIdToken: async () => 'demo-token',
-} as User
+const firebaseApp = isFirebaseConfigured
+  ? getApps().length ? getApp() : initializeApp(FIREBASE_CONFIG)
+  : null
 
-export const auth = {
-  currentUser: demoUser,
-  onAuthStateChanged: (listener: (user: User | null) => void) => {
-    queueMicrotask(() => listener(demoUser))
-    return () => undefined
-  },
-  signOut: async () => undefined,
-} as unknown as Auth
-
-export const googleProvider = {} as GoogleAuthProvider
-export const messaging = {} as Messaging
+export const auth = (firebaseApp ? getAuth(firebaseApp) : null) as Auth
+export const googleProvider = new GoogleAuthProvider()
+export const messaging = (firebaseApp && typeof window !== 'undefined' && 'Notification' in window
+  ? getMessaging(firebaseApp)
+  : null) as Messaging

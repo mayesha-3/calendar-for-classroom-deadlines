@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { ShieldCheck, AlertTriangle, Clock } from 'lucide-react'
 import { BACKEND_URL } from '../config'
 import ThemeToggle from './ThemeToggle'
+import { apiFetch } from '../api'
 
 interface SecurityGateProps {
   onPassed: (gateToken: string) => void
@@ -26,15 +27,15 @@ export default function SecurityGate({ onPassed }: SecurityGateProps) {
     const fetchQuestion = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${BACKEND_URL}/api/security-gate/question`)
+        const res = await apiFetch(`${BACKEND_URL}/api/security-gate/question`)
         if (res.ok) {
           const data = await res.json()
           setQuestion(data.question)
         } else {
-          setQuestion("What software platform does KanbaKan belong to?");
+          setQuestion("What is this platform called?");
         }
       } catch (err) {
-        setQuestion("What software platform does KanbaKan belong to?");
+        setError(err instanceof Error ? err.message : 'Could not load security challenge.')
       } finally {
         setLoading(false)
       }
@@ -76,7 +77,7 @@ export default function SecurityGate({ onPassed }: SecurityGateProps) {
     setError('')
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/security-gate/verify`, {
+      const res = await apiFetch(`${BACKEND_URL}/api/security-gate/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,8 +97,6 @@ export default function SecurityGate({ onPassed }: SecurityGateProps) {
 
       const data = await res.json()
       if (data.success && data.gateToken) {
-        localStorage.setItem('securityGatePassed', 'true')
-        localStorage.setItem('gateToken', data.gateToken)
         sessionStorage.setItem('securityGatePassed', 'true')
         sessionStorage.setItem('gateToken', data.gateToken)
         onPassed(data.gateToken)
@@ -195,7 +194,7 @@ export default function SecurityGate({ onPassed }: SecurityGateProps) {
                     {Math.max(0, maxAttempts - attemptsUsed)} / {maxAttempts}
                   </strong>
                 </span>
-                <span className="text-emerald-500 font-medium">Protected by KanbaKan</span>
+                <span className="text-emerald-500 font-medium">Protected by Confused CSE 6CF</span>
               </div>
             </form>
           )}

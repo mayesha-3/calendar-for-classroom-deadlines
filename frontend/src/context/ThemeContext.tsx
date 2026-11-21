@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 
-type Theme = 'light' | 'dark'
+type Theme = 'light' | 'dark' | 'barbie' | 'frost' | 'green'
+
+const THEME_ORDER: Theme[] = ['light', 'dark', 'barbie', 'frost', 'green']
 
 const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
   theme: 'light',
@@ -10,20 +12,22 @@ const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('kc-theme')
-    return (saved === 'dark' ? 'dark' : 'light') as Theme
+    if (saved === 'dark' || saved === 'barbie' || saved === 'frost' || saved === 'green') return saved
+    return 'light'
   })
 
   useEffect(() => {
     const root = document.documentElement
-    if (theme === 'dark') {
-      root.classList.add('dark')
-    } else {
-      root.classList.remove('dark')
-    }
+    root.classList.remove('dark', 'barbie', 'frost', 'green')
+    if (theme !== 'light') root.classList.add(theme)
     localStorage.setItem('kc-theme', theme)
   }, [theme])
 
-  const toggle = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'))
+  const toggle = () =>
+    setTheme((prev) => {
+      const idx = THEME_ORDER.indexOf(prev)
+      return THEME_ORDER[(idx + 1) % THEME_ORDER.length]
+    })
 
   return (
     <ThemeContext.Provider value={{ theme, toggle }}>

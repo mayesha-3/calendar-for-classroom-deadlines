@@ -4,7 +4,7 @@ import { initializeApp, cert, getApps } from "firebase-admin/app";
 import fs from "fs";
 import app from "./app.js";
 import { startDeadlineCron } from "./cron/deadlines.js";
-import { ensurePermanentAdmin } from "./utils/userUtils.js";
+import { ensurePermanentAdmin, migrateUserProfiles } from "./utils/userUtils.js";
 
 const {
   MONGODB_URI,
@@ -40,7 +40,24 @@ if (!getApps().length) {
   });
 }
 
-await mongoose.connect(MONGODB_URI);
+try {
+  await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
+} catch (error) {
+  console.error("Unable to connect to MongoDB. The backend cannot start without its database.");
+
+  if (error instanceof mongoose.Error.MongooseServerSelectionError) {
+    console.error(
+      "Check that your Atlas cluster is active, this computer's current public IP is in Atlas > Security > Network Access, and outbound TCP port 27017 is allowed."
+    );
+    console.error("If you are on a restricted network, retry from another network or ask its administrator to allow MongoDB Atlas traffic.");
+  }
+
+  const causeCode = error?.cause?.code || error?.reason?.servers?.values?.().next?.().value?.error?.code;
+  if (causeCode) console.error(`Connection error code: ${causeCode}`);
+  console.error(error?.message || "Unknown MongoDB connection error.");
+  process.exit(1);
+}
+await migrateUserProfiles();
 await ensurePermanentAdmin();
 
 startDeadlineCron();

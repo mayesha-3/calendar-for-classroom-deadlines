@@ -3,24 +3,59 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light Mode: pearly white, neutral, elegant ── */
   :root {
-    --bg: #FAF7F2;
+    --bg: #FAFAF8;
     --surface: #FFFFFF;
-    --accent: #2C2523;
-    --accent2: #D9A05B;
-    --text1: #1C1917;
-    --text2: #78716C;
-    --border: #E7E5E4;
+    --accent: #18181B;
+    --accent2: #71717A;
+    --text1: #18181B;
+    --text2: #71717A;
+    --border: #E4E4E7;
   }
 
+  /* ── Dark Mode: dark pink, black, cream ── */
   .dark {
-    --bg: #090D16;
-    --surface: #121826;
-    --accent: #F97316;
-    --accent2: #FB923C;
-    --text1: #F8FAFC;
-    --text2: #94A3B8;
-    --border: #1E293B;
+    --bg: #0E0810;
+    --surface: #1A1023;
+    --accent: #F472B6;
+    --accent2: #EC4899;
+    --text1: #FDF2F8;
+    --text2: #A78BBA;
+    --border: #2A1A38;
+  }
+
+  /* ── Barbie Mode: total pink immersion ── */
+  .barbie {
+    --bg: #FFF0F6;
+    --surface: #FFD9EC;
+    --accent: #FF1493;
+    --accent2: #FF69B4;
+    --text1: #8C0054;
+    --text2: #B9377E;
+    --border: #FFB3D9;
+  }
+
+  /* ── Frost Mode: icy sky-blue, Elsa / villain ── */
+  .frost {
+    --bg: #EFF6FF;
+    --surface: #DBEAFE;
+    --accent: #1D4ED8;
+    --accent2: #3B82F6;
+    --text1: #0F172A;
+    --text2: #475569;
+    --border: #93C5FD;
+  }
+
+  /* ── Green Mode: emerald nature ── */
+  .green {
+    --bg: #F0FDF4;
+    --surface: #ECFDF5;
+    --accent: #059669;
+    --accent2: #10B981;
+    --text1: #064E3B;
+    --text2: #4D7C6B;
+    --border: #A7F3D0;
   }
 
   * {
@@ -70,7 +105,6 @@
     color: black !important;
   }
 
-  /* Show link URLs explicitly in print */
   .print-link::after {
     content: " (" attr(href) ")";
     font-size: 0.8em;
@@ -83,7 +117,6 @@
     text-decoration: underline !important;
   }
 
-  /* Make modal content fill page for print */
   .fixed {
     position: static !important;
     background: transparent !important;

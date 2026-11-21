@@ -3,18 +3,16 @@ import { COMMENT_TYPES } from '../../shared/constants.js'
 
 const activityLogSchema = new mongoose.Schema(
   {
-    task: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', required: true, index: true },
+    deadline: { type: mongoose.Schema.Types.ObjectId, ref: 'Deadline', required: true, index: true },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     type: { type: String, enum: COMMENT_TYPES, required: true },
     content: { type: String, default: '' },
-    oldStatus: { type: String, default: '' },
-    newStatus: { type: String, default: '' },
     timestamp: { type: Date, default: () => new Date(), index: true },
   },
   { timestamps: true },
 )
 
-activityLogSchema.index({ task: 1, timestamp: 1 })
+activityLogSchema.index({ deadline: 1, timestamp: 1 })
 
 const ActivityLog = mongoose.models?.ActivityLog || mongoose.model('ActivityLog', activityLogSchema)
 export default ActivityLog
