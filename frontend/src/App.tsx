@@ -40,7 +40,16 @@ function SignIn({ onAuthenticated }: { onAuthenticated: () => void }) {
     setError('')
     setBusy(true)
     try { await action(); onAuthenticated() }
-    catch (err) { setError(err instanceof Error ? err.message : 'Sign in failed.') }
+    catch (err) {
+      if (err && typeof err === 'object' && 'code' in err) {
+        const code = String((err as { code?: string }).code)
+        if (code === 'auth/unauthorized-domain') {
+          setError('Google sign-in is not enabled for this website domain. Ask the administrator to add this Vercel domain in Firebase Authentication Authorized domains.')
+          return
+        }
+      }
+      setError(err instanceof Error ? err.message : 'Sign in failed.')
+    }
     finally { setBusy(false) }
   }
 
@@ -116,7 +125,7 @@ function App() {
       </div>
       {mobileNavOpen && <button type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} className="fixed inset-0 z-40 bg-black/30 md:hidden" />}
       <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-[var(--surface)] p-5 shadow-2xl transition-transform duration-200 md:hidden ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}><div className="mb-8 flex items-center justify-between"><span className="text-xl font-bold text-[var(--text1)]">Navigation</span><button type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} className="rounded-lg p-2 text-[var(--text2)]"><X size={22} /></button></div><nav className="flex flex-col gap-2">{navItems.map((item) => <Link key={item.path} to={item.path} onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-[var(--text2)]">{item.icon}{item.label}</Link>)}</nav></aside>
-      <main className="w-full min-w-0 max-w-full flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8"><Routes><Route path="/" element={<Navigate to="/calendar" replace />} /><Route path="/planning" element={<PlanningHub />} /><Route path="/calendar" element={<CalendarHub />} /><Route path="/resources" element={<Resources />} /><Route path="/settings" element={<Settings />} /><Route path="/settings/security" element={<AdminSecurity />} /><Route path="*" element={<Navigate to="/calendar" replace />} /></Routes></main>
+      <main className="w-full min-w-0 max-w-full flex-1 overflow-x-hidden p-4 sm:p-6 lg:p-8"><Routes><Route path="/" element={<Navigate to="/calendar" replace />} /><Route path="/planning" element={<PlanningHub />} /><Route path="/calendar" element={<CalendarHub />} /><Route path="/resources" element={<Resources />} /><Route path="/settings" element={<Settings />} /><Route path="/settings/security" element={profile.role === 'admin' ? <AdminSecurity /> : <Navigate to="/settings" replace />} /><Route path="*" element={<Navigate to="/calendar" replace />} /></Routes></main>
       <footer className="flex flex-col items-center justify-center gap-5 border-t border-[var(--border)] bg-[var(--surface)] px-8 py-10"><p className="text-sm text-[var(--text2)]">&copy; {new Date().getFullYear()} Confused CSE 6CF. All rights reserved.</p></footer>
       <ThemeToggle />
     </div>

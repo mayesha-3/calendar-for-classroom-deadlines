@@ -234,12 +234,14 @@ export default function Settings() {
               </p>
             )}
           </div>
-          <Link
-            to="/settings/security"
-            className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-[var(--text1)] hover:bg-[var(--border)]/50"
-          >
-            <Shield size={17} /> Security administration
-          </Link>
+          {isAdmin && (
+            <Link
+              to="/settings/security"
+              className="mt-5 inline-flex items-center gap-2 rounded-xl border border-[var(--border)] px-4 py-3 text-sm font-semibold text-[var(--text1)] hover:bg-[var(--border)]/50"
+            >
+              <Shield size={17} /> Security administration
+            </Link>
+          )}
         </div>
 
         {/* Admin Panel Section (Only visible to admins) */}
